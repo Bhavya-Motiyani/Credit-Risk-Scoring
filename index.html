@@ -1,0 +1,644 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Credit Risk Scoring</title>
+
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: Arial, Helvetica, sans-serif;
+            min-height: 100vh;
+            background:
+                radial-gradient(circle at top left, #243b72 0, transparent 32%),
+                radial-gradient(circle at bottom right, #17345c 0, transparent 30%),
+                #07111f;
+            color: #f5f7fb;
+            padding: 40px 20px;
+        }
+
+        .container {
+            max-width: 1150px;
+            margin: auto;
+        }
+
+        /* HEADER */
+
+        .header {
+            margin-bottom: 28px;
+        }
+
+        .eyebrow {
+            color: #6ea8ff;
+            font-size: 13px;
+            font-weight: 700;
+            letter-spacing: 1.5px;
+            text-transform: uppercase;
+            margin-bottom: 8px;
+        }
+
+        h1 {
+            font-size: 36px;
+            margin-bottom: 8px;
+        }
+
+        .subtitle {
+            color: #9caabd;
+            font-size: 15px;
+        }
+
+        /* MAIN LAYOUT */
+
+        .layout {
+            display: grid;
+            grid-template-columns: 1.15fr 0.85fr;
+            gap: 22px;
+        }
+
+        .card {
+            background: rgba(14, 27, 46, 0.88);
+            border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 18px;
+            padding: 25px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.25);
+            backdrop-filter: blur(12px);
+        }
+
+        .card h2 {
+            font-size: 18px;
+            margin-bottom: 20px;
+        }
+
+        /* FORM */
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+
+        .field {
+            display: flex;
+            flex-direction: column;
+            gap: 7px;
+        }
+
+        .field.full {
+            grid-column: 1 / -1;
+        }
+
+        label {
+            font-size: 12px;
+            color: #aebbd0;
+            font-weight: 600;
+        }
+
+        input {
+            width: 100%;
+            padding: 12px 13px;
+            border-radius: 10px;
+            border: 1px solid #263a56;
+            background: #0a1729;
+            color: white;
+            outline: none;
+            font-size: 14px;
+        }
+
+        input:focus {
+            border-color: #4d91ff;
+            box-shadow: 0 0 0 3px rgba(77,145,255,0.12);
+        }
+
+        button {
+            width: 100%;
+            margin-top: 20px;
+            border: none;
+            border-radius: 11px;
+            padding: 14px;
+            background: #397fe8;
+            color: white;
+            font-weight: 700;
+            font-size: 15px;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+
+        button:hover {
+            background: #2d6ed0;
+            transform: translateY(-1px);
+        }
+
+        /* RESULTS */
+
+        .result-card {
+            min-height: 100%;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .empty {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            color: #73839a;
+            padding: 50px 20px;
+            line-height: 1.6;
+        }
+
+        .result-title {
+            color: #9caabd;
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 8px;
+        }
+
+        .risk {
+            font-size: 34px;
+            font-weight: 800;
+            margin-bottom: 24px;
+        }
+
+        .risk.low {
+            color: #4ade80;
+        }
+
+        .risk.medium {
+            color: #fbbf24;
+        }
+
+        .risk.high {
+            color: #f87171;
+        }
+
+        .probability {
+            font-size: 42px;
+            font-weight: 800;
+            margin-bottom: 10px;
+        }
+
+        .bar {
+            height: 9px;
+            width: 100%;
+            background: #17263b;
+            border-radius: 20px;
+            overflow: hidden;
+            margin-bottom: 28px;
+        }
+
+        .bar-fill {
+            height: 100%;
+            background: #397fe8;
+            border-radius: 20px;
+        }
+
+        /* KEY FACTORS */
+
+        .factors {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .factor {
+            background: #0a1729;
+            border: 1px solid #1d3049;
+            border-radius: 11px;
+            padding: 13px 14px;
+        }
+
+        .factor-name {
+            font-size: 14px;
+            font-weight: 700;
+            margin-bottom: 4px;
+            word-break: break-word;
+        }
+
+        .factor-direction {
+            font-size: 12px;
+            color: #9caabd;
+        }
+
+        /* ERROR */
+
+        .error {
+            color: #f87171;
+            background: rgba(248,113,113,0.08);
+            border: 1px solid rgba(248,113,113,0.2);
+            padding: 14px;
+            border-radius: 10px;
+            font-size: 13px;
+        }
+
+        /* RESPONSIVE */
+
+        @media (max-width: 850px) {
+
+            .layout {
+                grid-template-columns: 1fr;
+            }
+
+            .form-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .field.full {
+                grid-column: auto;
+            }
+
+            h1 {
+                font-size: 30px;
+            }
+        }
+    </style>
+</head>
+
+
+<body>
+
+<div class="container">
+
+    <!-- ==================================================
+         HEADER
+         ================================================== -->
+
+    <div class="header">
+
+        <div class="eyebrow">
+            Machine Learning • Explainable AI
+        </div>
+
+        <h1>
+            Credit Risk Scoring
+        </h1>
+
+        <div class="subtitle">
+            Assess customer credit risk and understand the key
+            factors behind the prediction.
+        </div>
+
+    </div>
+
+
+    <!-- ==================================================
+         MAIN CONTENT
+         ================================================== -->
+
+    <div class="layout">
+
+
+        <!-- ==================================================
+             INPUT CARD
+             ================================================== -->
+
+        <div class="card">
+
+            <h2>
+                Customer Information
+            </h2>
+
+
+            <form method="POST">
+
+
+                <div class="form-grid">
+
+
+                    <!-- AGE -->
+
+                    <div class="field">
+
+                        <label>
+                            Age
+                        </label>
+
+                        <input
+                            type="number"
+                            name="age"
+                            value="{{ form_data.get('age', '40') }}"
+                            min="20"
+                            required
+                        >
+
+                    </div>
+
+
+                    <!-- MONTHLY INCOME -->
+
+                    <div class="field">
+
+                        <label>
+                            Monthly Income
+                        </label>
+
+                        <input
+                            type="number"
+                            name="monthly_income"
+                            value="{{ form_data.get('monthly_income', '1000') }}"
+                            min="1"
+                            step="0.01"
+                            required
+                        >
+
+                    </div>
+
+
+                    <!-- UTILIZATION -->
+
+                    <div class="field full">
+
+                        <label>
+                            Revolving Utilization of Unsecured Lines
+                        </label>
+
+                        <input
+                            type="number"
+                            name="utilization"
+                            value="{{ form_data.get('utilization', '0.164673') }}"
+                            min="0"
+                            step="0.000001"
+                            required
+                        >
+
+                    </div>
+
+
+                    <!-- 30-59 DAYS -->
+
+                    <div class="field">
+
+                        <label>
+                            30–59 Days Past Due
+                        </label>
+
+                        <input
+                            type="number"
+                            name="late_30_59"
+                            value="{{ form_data.get('late_30_59', '0') }}"
+                            min="0"
+                            required
+                        >
+
+                    </div>
+
+
+                    <!-- 60-89 DAYS -->
+
+                    <div class="field">
+
+                        <label>
+                            60–89 Days Past Due
+                        </label>
+
+                        <input
+                            type="number"
+                            name="late_60_89"
+                            value="{{ form_data.get('late_60_89', '0') }}"
+                            min="0"
+                            required
+                        >
+
+                    </div>
+
+
+                    <!-- 90 DAYS -->
+
+                    <div class="field">
+
+                        <label>
+                            90 Days Late
+                        </label>
+
+                        <input
+                            type="number"
+                            name="late_90"
+                            value="{{ form_data.get('late_90', '0') }}"
+                            min="0"
+                            required
+                        >
+
+                    </div>
+
+
+                    <!-- DEBT RATIO -->
+
+                    <div class="field">
+
+                        <label>
+                            Debt Ratio
+                        </label>
+
+                        <input
+                            type="number"
+                            name="debt_ratio"
+                            value="{{ form_data.get('debt_ratio', '1.482965') }}"
+                            min="0"
+                            step="0.000001"
+                            required
+                        >
+
+                    </div>
+
+
+                    <!-- OPEN CREDIT LINES -->
+
+                    <div class="field">
+
+                        <label>
+                            Open Credit Lines & Loans
+                        </label>
+
+                        <input
+                            type="number"
+                            name="open_credit_lines"
+                            value="{{ form_data.get('open_credit_lines', '9') }}"
+                            min="0"
+                            required
+                        >
+
+                    </div>
+
+
+                    <!-- REAL ESTATE LOANS -->
+
+                    <div class="field">
+
+                        <label>
+                            Real Estate Loans / Lines
+                        </label>
+
+                        <input
+                            type="number"
+                            name="real_estate_loans"
+                            value="{{ form_data.get('real_estate_loans', '0') }}"
+                            min="0"
+                            required
+                        >
+
+                    </div>
+
+
+                    <!-- DEPENDENTS -->
+
+                    <div class="field">
+
+                        <label>
+                            Dependents
+                        </label>
+
+                        <input
+                            type="number"
+                            name="dependents"
+                            value="{{ form_data.get('dependents', '2') }}"
+                            min="0"
+                            required
+                        >
+
+                    </div>
+
+
+                </div>
+
+
+                <!-- SUBMIT -->
+
+                <button type="submit">
+                    Assess Credit Risk
+                </button>
+
+
+            </form>
+
+        </div>
+
+
+        <!-- ==================================================
+             OUTPUT CARD
+             ================================================== -->
+
+        <div class="card result-card">
+
+
+            {% if not result %}
+
+                <div class="empty">
+
+                    <div>
+
+                        Enter the customer information and click
+
+                        <br>
+
+                        <strong>
+                            Assess Credit Risk
+                        </strong>
+
+                        to generate a prediction.
+
+                    </div>
+
+                </div>
+
+
+            {% elif result.error %}
+
+                <div class="error">
+
+                    {{ result.error }}
+
+                </div>
+
+
+            {% else %}
+
+
+                <!-- PREDICTED RISK -->
+
+                <div class="result-title">
+                    Predicted Risk
+                </div>
+
+                <div class="risk {{ result.risk_class }}">
+
+                    {{ result.risk }}
+
+                </div>
+
+
+                <!-- RISK PROBABILITY -->
+
+                <div class="result-title">
+                    Risk Probability
+                </div>
+
+                <div class="probability">
+
+                    {{ result.probability }}%
+
+                </div>
+
+
+                <!-- PROBABILITY BAR -->
+
+                <div class="bar">
+
+                    <div
+                        class="bar-fill"
+                        style="width: {{ result.probability }}%;"
+                    ></div>
+
+                </div>
+
+
+                <!-- KEY FACTORS -->
+
+                <div class="result-title">
+                    Key Factors
+                </div>
+
+
+                <div class="factors">
+
+                    {% for factor in result.key_factors %}
+
+                        <div class="factor">
+
+                            <div class="factor-name">
+
+                                {{ factor.name }}
+
+                            </div>
+
+                            <div class="factor-direction">
+
+                                {{ factor.direction }}
+
+                            </div>
+
+                        </div>
+
+                    {% endfor %}
+
+                </div>
+
+
+            {% endif %}
+
+
+        </div>
+
+    </div>
+
+</div>
+
+</body>
+</html>
