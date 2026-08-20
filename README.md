@@ -114,7 +114,6 @@ To address this imbalance, different approaches were explored:
 
 * **Class weighting**
 * **SMOTENC oversampling**
-* **Sample weighting** where appropriate
 
 The goal was to improve the model's ability to identify the minority class rather than simply maximizing overall accuracy.
 
@@ -150,9 +149,9 @@ C = 0.01
 
 ### Gradient Boosting
 
-Gradient Boosting and Random Forest were also explored using **Optuna**.
+Gradient Boosting, Random Forest and Logistic Regression, all were also explored using **Optuna**.
 
-The Optuna study was configured to maximize **recall**, since identifying delinquent customers is particularly important in a credit-risk setting.
+The Optuna study was configured to maximize **recall**, since identifying delinquent customers is particularly important in a credit-risk setting. The best performing model here was Gradient Boost.
 
 The best Gradient Boosting configuration found was:
 
